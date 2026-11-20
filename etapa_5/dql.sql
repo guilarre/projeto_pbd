@@ -1,23 +1,44 @@
--- Mostrando TUDO quando damos join
-SELECT * FROM reserva JOIN pessoa ON reserva.cpf = pessoa.cpf;
+-- =========================================================
+-- PARTE 1: JOIN
+-- =========================================================
 
--- Mostrando os nomes dos hóspedes e CPFs
+-- Pergunta: quais são os itens de frigobar consumidos por cada reserva? E nome de quem essa reserva está?
 SELECT
-    reserva.cpf AS "CPF",
-    pessoa.nome AS "Nome"
-FROM reserva
-JOIN pessoa ON reserva.cpf = pessoa.cpf;
+    r.idreserva AS "ID da reserva",
+    p.cpf AS "CPF",
+    p.nome AS "Nome do hóspede",
+    -- a função COALESCE deixa a gente retornar o primeiro não nulo dos seus argumentos
+    COALESCE(
+        -- o STRING_AGG vai concatenar colunas diferentes separando pelo delimitador passado no 2o arg
+        STRING_AGG(
+            i.nome || ' (' || cf.quantidade || 'x R$' || cf.valorunitario || ')',
+            ', '
+        ),
+        'Nenhum consumo'
+    ) AS "Itens consumidos"
+FROM reserva r
+INNER JOIN pessoa p
+    ON r.cpf = p.cpf
+LEFT JOIN consumofrigobar cf
+    ON r.idreserva = cf.idreserva
+LEFT JOIN item i
+    ON cf.iditem = i.iditem
+GROUP BY r.idreserva, p.cpf, p.nome
+ORDER BY r.idreserva;
 
--- Os hóspedes com status CHECKIN
+-- Pergunta: qual o valor total do consumo de cada reserva?
 SELECT
-    reserva.cpf AS "CPF",
-    pessoa.nome AS "Nome",
-    reserva.idreserva AS "ID da reserva",
-    reserva.status AS "Status da reserva",
-    reserva.valortotal AS "Valor total"
-FROM reserva
-JOIN pessoa ON reserva.cpf = pessoa.cpf
-WHERE reserva.status = 'CHECKIN'
-LIMIT 3;
-
-
+    r.idreserva AS "ID da reserva",
+    p.cpf AS "CPF",
+    p.nome AS "Nome do hóspede",
+    COALESCE(
+        'R$ ' || TO_CHAR(SUM(cf.quantidade * cf.valorunitario), 'FM999999990.00'),
+        'R$ 0.00'
+    ) AS "Total frigobar"
+FROM reserva r
+INNER JOIN pessoa p
+    ON r.cpf = p.cpf
+LEFT JOIN consumofrigobar cf
+    ON r.idreserva = cf.idreserva
+GROUP BY r.idreserva, p.cpf, p.nome
+ORDER BY r.idreserva;
