@@ -47,25 +47,18 @@ ORDER BY r.idreserva;
 -- PARTE 2: GROUP BY
 -- =========================================================
 
--- Pergunta: quantas limpezas estão pendentes no hotel?
+-- Pergunta: quais limpezas pendentes tem cada funcionário?
 
--- WITH cria uma cte que é tipo uma "tabela temporaria" para ficar melhor a leitura dos dados
-WITH ResumoLimpezas AS (
-    SELECT
-        status,
-        COUNT(idLimpeza) AS quantidade_limpezas
-    FROM Limpeza
-    WHERE status = 'PENDENTE'
-    GROUP BY status
-)
 SELECT
-    l.status,
-    r.quantidade_limpezas,
-    l.idLimpeza,
-    l.dataHora,
-    l.observacao,
-    l.cpf
+    l.cpf,
+    STRING_AGG(
+        CONCAT(
+            'ID: ', l.idLimpeza,
+            ' | Data: ', l.dataHora,
+            ' | Observação: ', COALESCE(l.observacao, 'Sem observação')
+        ),
+        E'\n'
+    ) AS limpezas_pendentes
 FROM Limpeza l
-JOIN ResumoLimpezas r ON l.status = r.status
 WHERE l.status = 'PENDENTE'
-ORDER BY l.dataHora;
+GROUP BY l.cpf;
