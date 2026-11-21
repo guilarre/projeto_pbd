@@ -62,3 +62,11 @@ SELECT
 FROM Limpeza l
 WHERE l.status = 'PENDENTE'
 GROUP BY l.cpf;
+
+-- Pergunta: quantos quartos existem em cada situação no hotel?
+SELECT
+    status,
+    COUNT(idQuarto) AS quantidade_quartos
+FROM Quarto
+GROUP BY status
+ORDER BY quantidade_quartos DESC;
