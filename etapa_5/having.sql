@@ -1,5 +1,5 @@
 -- =========================================================
--- PARTE 2: GROUP BY
+-- PARTE 3: HAVING
 -- =========================================================
 
 -- CONSULTA 1: Valor acumulado de reservas por hospede
